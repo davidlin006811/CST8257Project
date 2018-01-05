@@ -1,0 +1,37 @@
+.hide{
+    display: none;
+}
+.show{
+    display: true;
+}
+.welcome {
+    position: relative;
+    margin-left: 30px;
+    margin-top: 50px;
+}
+.signup,
+.login-page{
+    margin-top: 10px;
+    margin-left: 20px;
+}
+.loginError{
+    padding-left: 70px;
+    color: red;
+}
+.signup-title,
+.login-title{
+    padding-left: 200px;
+    padding-bottom: 10px;
+}
+.h-margin{
+    margin-left: 230px;
+}
+.v-margin{
+    margin-top:20px;
+}
+.label-padding{
+    padding-left: 70px;
+}
+.highlight{
+    font-weight: 700;
+}
