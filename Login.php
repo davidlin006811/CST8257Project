@@ -40,9 +40,10 @@ if (isset($btnLogin)) {
             }
             else{
                 header("location:MyAlbums.php");
+                exit();
             }
             
-            exit();
+            
         }
         else{
             $loginError = "Incorrect user ID and/or Password!";
