@@ -1,5 +1,5 @@
 <?php
-include_once 'ProjectClass.php';
+include_once 'EntityClass.php';
 date_default_timezone_set("America/Toronto");
 function ValidateUserId($id) {
     return $id != NULL? TRUE:FALSE;
