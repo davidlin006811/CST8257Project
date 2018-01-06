@@ -2,14 +2,16 @@
 <!DOCTYPE html>
 <html lang="en" style="position: relative; min-height: 100%;">
 <head>
-<title>Online Course Registration</title>
+<title>Algonquin Social Media</title>
         <meta charset="utf-8"> 
         <meta name="viewport" content="width=device-width, initial-scale=1">     
         <link href="/AlgCommon/Contents/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="/AlgCommon/Contents/AlgCss/Site.css" rel="stylesheet" type="text/css"/> 
         <link href="/CST8257Project/ProjectContents/Project.css" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/stefangabos/Zebra_Dialog/dist/css/flat/zebra_dialog.min.css">
         <script src="/AlgCommon/Scripts/jquery-2.2.4.min.js" type="text/javascript"></script>
-       
+        <script src="https://cdn.jsdelivr.net/gh/stefangabos/Zebra_Dialog/dist/zebra_dialog.min.js"></script>
+       <script src="/CST8257Project/ProjectScripts/Site.js" type="text/javascript"></script>
 </head>
 <body style="padding-top: 50px; margin-bottom: 60px; background-color: lightblue">
     <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
@@ -32,7 +34,7 @@
             <ul class="nav navbar-nav">
                <li class="active"><a href="Index.php">Home </a></li>
                <li><a href="MyFriends.php">My Friends</a></li>
-               <li><a href="MyAlbum.php">My Albums</a></li>
+               <li><a href="MyAlbums.php">My Albums</a></li>
                <li><a href="MyPictures.php">My Pictures</a></li>
                <li><a href="UploadPictures.php">Upload Pictures</a></li>
                
