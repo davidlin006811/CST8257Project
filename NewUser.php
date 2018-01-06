@@ -1,10 +1,13 @@
 <?php
+session_start();
 include 'ProjectCommon/Header.php';
 include 'ProjectCommon/Functions.php';
 extract($_POST);
 $idError = $nameError = $phoneError = $passwordError = $repasswordError = "";
 $idVal = $nameVal = $phoneVal = $passwordVal = $repassowrdVal = "";
-if (isset($btnSignup)){
+
+// prevent double submission
+if (isset($btnSignup) && ($hiddenKey == $_SESSION['key'])){
     $validateSuccess = TRUE;
     // validate student id
     $idValidateSuccess = ValidateUserId($userId);
@@ -67,55 +70,57 @@ if (isset($btnSignup)){
             $idError = "A user with this ID has already signed up";
         }
         else {
-            echo "<script>alert('Add a new user record success!')</script>";
+            echo "<script>ShowDiaglogBox('A new user has been added successfully')</script>";
             $idVal = $nameVal = $phoneVal = $passwordVal = $repassowrdVal = "";
         }
     }
 }
+$_SESSION['key'] = mt_rand(0, 1000000);
 ?>
 <div class = "signup">
     <h1 class="signup-title">Sign Up</h1>
     <p style="padding-left: 70px">All fields are required</p>
     <br/>
     <form action = "NewUser.php" role="form" method="post">
+        <input type="hidden" name="hiddenKey" value="<?php echo $_SESSION['key'] ?>"/>
         <div class="row horizontal-margin vertical-margin">
-            <div class ="col-sm-2 label-padding highlight">Student ID:</div>
-            <div class = "col-sm-2">
-                <input type = "text" class = "form-control" name = "userId" placeholder="Enter userId" <?php echo "value = '$idVal'" ?>/>
+            <div class ="col-sm-2 label-padding highlight label-length">User ID:</div>
+            <div class = "col-sm-2 field-length">
+                <input type = "text" class = "form-control" name = "userId" placeholder="Enter user Id" <?php echo "value = '$idVal'" ?>/>
             </div>
             <div class="error col-sm-6"><?php echo $idError ?></div>
         </div>
         <div class="row horizontal-margin vertical-margin">
-            <div class ="col-sm-2 label-padding highlight">Name:</div>
-            <div class = "col-sm-2">
+            <div class ="col-sm-2 label-padding highlight label-length">Name:</div>
+            <div class = "col-sm-2 field-length">
                 <input type = "text" class = "form-control" name = "userName" placeholder="Enter user name" <?php echo "value = '$nameVal'" ?>/>
             </div>
             <div class="error col-sm-6"><?php echo $nameError ?></div>
         </div>
         <div class= "row horizontal-margin vertical-margin">
-            <div class ="col-sm-2 label-padding highlight">Phone Number: <br/>(nnn-nnn-nnnn)</div>
-            <div class = "col-sm-2">
+            <div class ="col-sm-2 label-padding highlight label-length">Phone Number: <br/>(nnn-nnn-nnnn)</div>
+            <div class = "col-sm-2 field-length">
                 <input type = "text" class = "form-control" name = "phoneNumber" placeholder="nnn-nnn-nnnn" <?php echo "value='$phoneVal'" ?> />
             </div>
             <div class="error col-sm-6"><?php echo "$phoneError"; ?></div>
         </div>
         <div class="row horizontal-margin vertical-margin">
-            <div class ="col-sm-2 label-padding highlight">Password:</div>
-            <div class = "col-sm-2">
+            <div class ="col-sm-2 label-padding highlight label-length">Password:</div>
+            <div class = "col-sm-2 field-length">
                 <input type = "password" class = "form-control" name = "password" placeholder="Confirm password" <?php echo "value = '$passwordVal'" ?>/>
             </div>
             <div class="error col-sm-6"><?php echo $passwordError ?></div>
         </div>
          <div class="row horizontal-margin vertical-margin">
-            <div class ="col-sm-2 label-padding highlight">Password Again:</div>
-            <div class = "col-sm-2">
+            <div class ="col-sm-2 label-padding highlight label-length">Password Again:</div>
+            <div class = "col-sm-2 field-length">
                 <input type = "password" class = "form-control" name = "password2" placeholder="Enter password" <?php echo "value = '$repasswordVal'" ?>/>
             </div>
             <div class="error col-sm-6"><?php echo $repasswordError ?></div>
         </div>
         <div class="row  h-margin v-margin">
-            <div class="col-sm-1"><button type = "submit" name = "btnSignup" class = "btn btn-success" >Submit</button></div>
-            <div class="col-sm-1"><button type ="submit" class = "btn btn-warning" name = "btnclear">Clear</button></div>
+            <div class="col-sm-1 btn-submit"><button type = "submit" name = "btnSignup" class = "btn btn-success btn-block" >Submit</button></div>
+            <div class="col-sm-1 btn-clear"><button type ="submit" class = "btn btn-warning btn-block" name = "btnclear">Clear</button></div>
         </div>
     </form>
 </div>
