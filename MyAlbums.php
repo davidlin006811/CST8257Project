@@ -66,9 +66,10 @@ $accessibility = getAccessCodeFromAccessibility();
                     $accessCode = $myAlbums[$i]->getCode();
                     $selectItem = $accessCode == "private"? 0:1;
                     $deleteLink = "MyAlbums.php?deleteId=".$id;
+                    $pictureLink = 'MyPictures.php?albumId='.$id;
                     $name = "accessbility".$id;
                     echo "<tr>";
-                    echo "<td>$title</td><td>$date</td><td>$picturesNumber</td>";
+                    echo "<td><a href='$pictureLink'>$title</a></td><td>$date</td><td>$picturesNumber</td>";
                     echo "<td><select class = 'form-control' name = '$name'>";
                     for($j = 0; $j < sizeof($accessibility); $j++){
                         $accessibilityCode = $accessibility[$j]->getCode();
