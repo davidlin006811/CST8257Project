@@ -1,3 +1,6 @@
+a{
+    text-decoration: none;
+}
 .hide{
     display: none;
 }
@@ -9,6 +12,7 @@
     margin-left: 30px;
     margin-top: 50px;
 }
+.new-album,
 .signup,
 .login-page{
     margin-top: 10px;
@@ -18,13 +22,14 @@
     padding-left: 70px;
     color: red;
 }
+.new-album-title,
 .signup-title,
 .login-title{
     padding-left: 200px;
     padding-bottom: 10px;
 }
 .h-margin{
-    margin-left: 230px;
+    margin-left: 205px;
 }
 .v-margin{
     margin-top:20px;
@@ -34,4 +39,43 @@
 }
 .highlight{
     font-weight: 700;
+}
+.center{
+    text-align: center;
+}
+.btn-submit,
+.btn-clear{
+    width:120px;
+}
+.field-length {
+    width:240px;
+}
+.label-length{
+    width:200px;
+}
+.link-NewAlbum{
+    margin-right: 100px;
+    margin-bottom: 10px;
+    float: right;
+}
+.album-save{
+    margin-left: 1030px;
+}
+.my-album{
+    width:1280px;
+    height:auto;
+    margin: auto;
+}
+.album-table{
+    height:250px;
+    width:100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.album-table .table{
+    border-top: 1px solid #dddddd;
+}
+.album-table .table tr{
+    line-height: 25px;
+    height: 25px;
 }
