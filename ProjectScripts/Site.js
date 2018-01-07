@@ -15,7 +15,6 @@
                ]
         });
     });
-    
 });
 
 function ShowDiaglogBox(content){
@@ -26,3 +25,48 @@ function ShowDiaglogBox(content){
     });
 }
 
+function ConfirmDefriend(){
+    var confirmLink = "MyFriends.php?defriend=yes";
+    $.Zebra_Dialog('The selected friends will be defriended!',{
+        type: 'confirmation',
+        title: 'Confirmation Message',
+        buttons: [{
+                caption: 'OK', callback: function(){
+                    window.location.replace(confirmLink);
+                }
+        }, { caption: 'Cancel' }]
+    });
+}
+function ConfirmDeny(){
+    var confirmLink = "MyFriends.php?deny=yes";
+    $.Zebra_Dialog('The selected friends will be defriended!',{
+        type: 'confirmation',
+        title: 'Confirmation Message',
+        buttons: [{
+                caption: 'OK', callback: function(){
+                    window.location.replace(confirmLink);
+                }
+        }, { caption: 'Cancel' }]
+    });
+}
+
+
+function run_waitMe(){
+
+$('body').waitMe({
+ 
+effect: 'ios',
+
+//place text under the effect (string).
+
+text: 'Please waiting...',
+
+//background for container (string).
+
+bg: 'rgba(255,255,255,0.7)',
+
+//color for background animation and text (string).
+
+color: '#111'
+});
+}
