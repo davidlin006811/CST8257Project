@@ -1,8 +1,11 @@
 <?php
+session_start();
+include 'ProjectCommon/Header.php';
+include_once 'ProjectCommon/Functions.php';
+if (urldecode($_GET['albumId'])){
+    var_dump($_GET['albumId']);
+}
+?>
+<?php include 'ProjectCommon/Footer.php' ?>
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
