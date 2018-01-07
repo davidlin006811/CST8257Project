@@ -69,38 +69,47 @@ class Album{
 class Picture {
     private $fileName;
     private $id;
+    private $album_Id;
+    private $date_Updated;
+    private $title;
+    private $description;
     
-    public static function getPictures() {
-        $pictures = array();
-        $files = scandir(ALBUM_THUMBNAILS_DIR);
-        $numFiles = count($files);
-        if ( $numFiles > 2 ) {
-            for ($i = 2; $i < $numFiles; $i++) {
-                $ind = strripos($files[$i], "/");
-                $fileName = substr($files[$i], $ind);
-                $picture = new Picture($fileName, $i);
-                $pictures[$i] = $picture;
-            }
-        }
-        return $pictures;
-    }
-    
-    public function __construct($fileName, $id) {
+    public function __construct($id, $title, $album_Id, $date_Updated, $description, $fileName) {
         $this->fileName = $fileName;
         $this->id = $id;
+        $this->album_Id = $album_Id;
+        $this->date_Updated = $date_Updated;
+        $this->title = $title;
+        $this->description = $description;
     }
     
     public function getId() {
         return $this->id;
     }
     
-    public function getName() {
+    public function getDescription(){
+        return $this->description;
+    }
+    
+    public function getDateUpdated(){
+        return $this->date_Updated;
+    }
+    public function getFileName(){
+        return $this->fileName;
+    }
+    public function getAlbumId() {
+        return $this->album_Id;
+    }
+    /* public function getName() {
         $ind = strripos($this->fileName, '.');
         $name = substr($this->fileName, 0, $ind);
         return $name;
-    }
-    
-    public function getAlbumFilePath() {
+    }*/
+ public function getTitle(){
+     return $this->title;
+ }
+
+  public function getAlbumFilePath() {
         return ALBUM_PICTURES_DIR."/".$this->fileName;
     }
     
@@ -127,4 +136,22 @@ class Accessibility {
     public function getDescription(){
         return $this->description;
     }
+}
+
+class File{
+    private $tempFilePath;
+    private $filePath;
+ 
+    public function __construct($tempFilePath, $filePath) {
+        $this->tempFilePath = $tempFilePath;
+        $this->filePath = $filePath;
+    
+    }
+    public function getFileTempPath(){
+        return $this->tempFilePath;
+    }
+    public function getFilePath(){
+        return $this->filePath;
+    }
+
 }

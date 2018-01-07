@@ -1,5 +1,7 @@
 <?php
 include_once 'EntityClass.php';
+include_once 'ConstantsAndSettings.php';
+
 date_default_timezone_set("America/Toronto");
 function ValidateUserId($id) {
     return $id != NULL? TRUE:FALSE;
@@ -146,6 +148,22 @@ function DeleteAlbum($albumId, $ownerId) {
     $pStmt->execute(['albumId'=>$albumId, 'ownerId'=>$ownerId]);
 }
 
+// get an album by album id
+function GetAlbumByAlbumId($albumId){
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Album WHERE Album_Id = :albumId';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['albumId'=>$albumId]);
+    $row = $pStmt->fetch(PDO::FETCH_ASSOC);
+    if($row){
+        $album = new Album($row['Album_Id'], $row['Title'], $row['Date_Updated'], $row['Owner_Id'], $row['accessibility_Code']);
+        return $album;
+    }
+    else{
+        return NULL;
+    }
+}
+
 // get accessbility codes from Accessibility table
 function getAccessCodeFromAccessibility(){
     $codes = array();
@@ -165,8 +183,10 @@ function getAccessCodeFromAccessibility(){
     }
 }
 
+
 // add a new Album to database
 function addNewAlbum($title, $description, $ownerId, $accessCode){
+    
     $updateDate = date("Y-m-d");
     $myPdo = ConnectSQLServer();
     $addNewAlbumStatement = 'INSERT INTO Album(Title, Description, Date_Updated, Owner_Id, Accessibility_Code) VALUES (:title, :description, :dateUpdated, :ownerId, :accessCode)';
@@ -174,3 +194,173 @@ function addNewAlbum($title, $description, $ownerId, $accessCode){
     $pStmt->execute(['title'=>$title, 'description'=>$description, 'dateUpdated'=>$updateDate, 'ownerId'=>$ownerId, 'accessCode'=>$accessCode]);
 }
 
+// get pictures by album id
+function GetPicturesByAlbumId($albumId){
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Picture WHERE Album_Id = :albumId';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['albumId'=>$albumId]);
+    $pictures = array();
+    foreach($pStmt as $row){
+        $picture = new Picture($row['Picture_Id'], $row['Title'], $row['Album_Id'], $row['Date_Add'], $row['Description'], $row['FileName']);
+        array_push($pictures, $picture);
+    }
+    if (sizeof($pictures) != 0){
+        return $pictures;
+    }
+    else {
+        return NULL;
+    }
+}
+
+
+function save_uploaded_file($destinationPath, $tempFilePath, $upLoadFilePath) {
+    if (!file_exists($destinationPath)) {
+        mkdir($destinationPath);
+    }
+    //$tempFilePath = $_FILES['picUpload']['tmp_name'][$id];
+    //$filePath = $destinationPath."/".$_FILES['picUpload']['name'][$id];
+    $filePath = $destinationPath."/".$upLoadFilePath;
+    $pathInfo = pathinfo($filePath);
+    $dir = $pathInfo['dirname'];
+    $fileName = $pathInfo['filename'];
+    $ext = $pathInfo['extension'];
+    
+    //make sure not to overwrite existing file
+    $i = "";
+    while (file_exists($filePath)) {
+        $i++;
+        $filePath = $dir."/".$fileName."_".$i.".".$ext;
+    }
+    move_uploaded_file($tempFilePath, $filePath);
+    return $filePath;
+}
+
+function resamplePicture($filePath, $destinationPath, $maxWidth, $maxHeight) {
+    if (!file_exists($destinationPath)) {
+        mkdir($destinationPath);
+    }
+    $imagedetails = getimagesize($filePath);
+    
+    $originalResource = null;
+    if ($imagedetails[2] == IMAGETYPE_JPEG) {
+        $originalResource = imagecreatefromjpeg($filePath);
+    }
+    else if ($imagedetails[2] == IMAGETYPE_PNG) {
+        $originalResource = imagecreatefrompng($filePath);
+    }
+    else if ($imagedetails[2] == IMAGETYPE_GIF) {
+        $originalResource = imagecreatefromgif($filePath);
+    }
+    $widthRatio = $imagedetails[0] / $maxWidth;
+    $heightRatio = $imagedetails[1] / $maxHeight;
+    $ratio = max($widthRatio, $heightRatio);
+    
+    $newWidth = $imagedetails[0] / $ratio;
+    $newHeight = $imagedetails[1] / $ratio;
+    
+    $newImage = imagecreatetruecolor($newWidth, $newHeight);
+    
+    $success = imagecopyresampled($newImage, $originalResource, 0, 0, 0, 0, $newWidth, $newHeight, $imagedetails[0], $imagedetails[1]);
+    
+    if (!$success) {
+        imagedestroy($newImage);
+        imagedestroy($originalResource);
+        return "";
+    }
+    $pathInfo = pathinfo($filePath);
+    $newFilePath = $destinationPath."/".$pathInfo['filename'];
+    if ($imagedetails[2] == IMAGETYPE_JPEG) {
+        $newFilePath .= ".jpg";
+        $success = imagejpeg($newImage, $newFilePath, 100);
+    }
+    else if ($imagedetails[2] == IMAGETYPE_PNG) {
+        $newFilePath .= ".png";
+        $success = imagepng($newImage, $newFilePath, 0);
+    }
+    else if ($imagedetails[2] == IMAGETYPE_GIF) {
+        $newFilePath .= ".gif";
+        $success = imagegif($newImage, $newFilePath);
+    }
+    
+    imagedestroy($newImage);
+    imagedestroy($originalResource);
+    
+    if (!$success) {
+        return "";
+    }
+    else {
+        return $newFilePath;
+    }
+}
+
+function rotateImage($filePath, $degrees) {
+    
+   $imageDetails = getimagesize($filePath);
+   
+   $originalResource = null;
+   if ($imageDetails[2] == IMAGETYPE_JPEG) {
+       $originalResource = imagecreatefromjpeg($filePath);
+   }
+   else if ($imageDetails[2] == IMAGETYPE_PNG) {
+       $originalResource = imagecreatefrompng($filePath);
+   }
+   else if ($imageDetails[2] == IMAGETYPE_GIF) {
+       $originalResource = imagecreatefromgif($filePath);
+   }
+   
+   $rotateResource = imagerotate($originalResource, $degrees, 0);
+   
+   if ($imageDetails[2] == IMAGETYPE_JPEG) {
+       $success = imagejpeg($rotateResource, $filePath, 100);
+   }
+   else if ($imageDetails[2] == IMAGETYPE_PNG) {
+       $success = imagepng($rotateResource, $filePath, 0);
+   }
+   else if ($imageDetails[2] == IMAGETYPE_GIF) {
+       $success = imagegif($rotateResource, $filePath);
+   }
+   imagedestroy($originalResource);
+   imagedestroy($rotateResource);
+   
+}
+function downloadFile($filePath) {
+    $fileName = basename($filePath);
+    $fileLength = filesize($filePath);
+    
+    header("Content-Type: application/octet-stream");
+    header("Content-Disposition: attachment; filename = \"$fileName\"");
+    header("Content-Length: $fileLength");
+    header("Content-Description: File Transfer");
+    header("Expires: 0");
+    header("Cache-Control: must-revalidate");
+    header("Pragma: private");
+    
+    ob_clean();
+    flush();
+    readfile($filePath);
+    flush();
+}
+
+// add new Picture to Album
+function AddNewPicture($albumId, $title, $description, $file){
+    date_default_timezone_set("America/Tornoto");
+    $dateUpdate =  date("Y-m-d");
+    $tempPath = $file->getFileTempPath();
+    $uploadFilePath = $file->getFilePath();
+    $saveFilePath = save_uploaded_file(ORIGINAL_PICTURES_DIR, $tempPath, $uploadFilePath);
+    
+     // save image as Album picture
+    resamplePicture($saveFilePath, ALBUM_PICTURES_DIR, IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT);
+     // save image as thumbnail
+    resamplePicture($saveFilePath, ALBUM_THUMBNAILS_DIR, THUMB_MAX_WIDTH, THUMB_MAX_HEIGHT);
+    $pathInfo = pathinfo($saveFilePath);
+    $name = $pathInfo['filename'];
+    $ext = $pathInfo['extension'];
+    $fileName = $name.'.'.$ext;
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'INSERT INTO Picture(Album_Id, FileName, Title, Description, Date_Added) Values (:id, :fileName, :title, :description, :date)';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['id'=>$albumId, 'fileName'=>$fileName, 'title'=>$title, 'description'=>$description, 'date'=>$dateUpdate]);
+}
+?>
