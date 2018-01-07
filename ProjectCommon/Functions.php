@@ -57,7 +57,8 @@ function ConnectSQLServer(){
 
 // save a new user in User table
 function SaveUserRecord($userId, $userName, $phoneNumber, $Password) {
-       
+    $userId = htmlentities($userId);  
+    $userName = htmlentities($userName);
     $myPdo = ConnectSQLServer();
     $sqlStatement = 'SELECT * FROM User WHERE UserId= :userId';
     $pStmt = $myPdo->prepare($sqlStatement);
@@ -92,6 +93,21 @@ function UserLogin($userId, $loginPassword) {
     
 }
 
+// get user by user id
+function GetUserById($userId) {
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM User WHERE UserId = :userId';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['userId'=>$userId]);
+    $row = $pStmt->fetch(PDO::FETCH_ASSOC);
+     if ($row) {
+          $user = new User($row['UserId'], $row['Name'], $row['Phone']);
+          return $user;
+     }
+     else {
+         return NULL;
+     }
+}
  // get all albums create by a user
 function GetMyAlbum($userId) {
     $myAlbums = array();
@@ -186,7 +202,8 @@ function getAccessCodeFromAccessibility(){
 
 // add a new Album to database
 function addNewAlbum($title, $description, $ownerId, $accessCode){
-    
+    $title = htmlentities($title);
+    $description = htmlentities($description);
     $updateDate = date("Y-m-d");
     $myPdo = ConnectSQLServer();
     $addNewAlbumStatement = 'INSERT INTO Album(Title, Description, Date_Updated, Owner_Id, Accessibility_Code) VALUES (:title, :description, :dateUpdated, :ownerId, :accessCode)';
@@ -358,9 +375,149 @@ function AddNewPicture($albumId, $title, $description, $file){
     $name = $pathInfo['filename'];
     $ext = $pathInfo['extension'];
     $fileName = $name.'.'.$ext;
+    $title = htmlentities($title);
+    $description = htmlentities($description);
     $myPdo = ConnectSQLServer();
     $sqlStatement = 'INSERT INTO Picture(Album_Id, FileName, Title, Description, Date_Added) Values (:id, :fileName, :title, :description, :date)';
     $pStmt = $myPdo->prepare($sqlStatement);
     $pStmt->execute(['id'=>$albumId, 'fileName'=>$fileName, 'title'=>$title, 'description'=>$description, 'date'=>$dateUpdate]);
 }
-?>
+
+// check if 2 users are already friends
+function GetFriendShip($userId1, $userId2) {
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Friendship WHERE (Friend_RequesterId = :userId1 && Friend_RequesteeId = :userId2) OR (Friend_RequesterId = :userId3 && Friend_RequesteeId = :userId4)';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['userId1'=>$userId1, 'userId2'=>$userId2, 'userId3'=>$userId2, 'userId4'=>$userId1]);
+    $row = $pStmt->fetch(PDO::FETCH_ASSOC);
+   
+    if ($row){
+        $friendship = new FriendShip($row['Friend_RequesterId'], $row['Friend_RequesteeId'], $row['Status']);
+        return $friendship;
+    }
+    else {
+        return NULL;
+    }
+}
+// add friendship between 2 users
+function AddFriendShip($requesterId, $requesteeId){
+    if ($requesteeId == $requesterId) {
+        return MYSELF;
+    }
+    $requestee = GetUserById($requesteeId);
+    if (!$requestee) {
+        return NOUSER;
+    }
+    $friendship = GetFriendShip($requesterId, $requesteeId);
+    
+    if ($friendship) {
+         $friendshipStatus = $friendship->getStatus();
+        if ($friendshipStatus == "accepted") {
+            return BEFRIENDALREADY;
+         }
+    
+        $friend_requesterId = $friendship->getRequesterId();
+        $Status = $friendship->getStatus();
+        if ($friend_requesterId == $requesterId) {
+            return REPEATREQUEST;
+        }
+    
+        if ($friend_requesterId == $requesteeId && $Status == 'request' ) {
+            $myPdo = ConnectSQLServer();
+            $sqlStatement = 'UPDATE Friendship SET Status = "accepted" WHERE (Friend_RequesterId = :userId1 && Friend_RequesteeId = :userId2) OR (Friend_RequesterId = :userId2 && Friend_RequesteeId = :userId1)';
+            $pStmt = $myPdo->prepare($sqlStatement);
+            $pStmt->execute(['userId1'=>$requesterId, 'userId2'=>$requesteeId]);
+            return SUCCESS;
+        }
+    }
+   
+    else{
+        $myPdo = ConnectSQLServer();
+        $sqlStatement = 'INSERT INTO Friendship VALUES (:requesterId, :requesteeId, :status)';
+        $pStmt = $myPdo->prepare($sqlStatement);
+        $pStmt->execute(['requesterId'=>$requesterId, 'requesteeId'=>$requesteeId, 'status'=> 'request']);
+        return SEND;
+    }
+    
+}
+
+// find user's friends, it return 
+function GetMyFriends($userId){
+    $friends = array();
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Friendship WHERE (Friend_RequesterId = :userId || Friend_RequesteeId = :userId) && Status = "accepted"';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['userId'=>$userId]);
+    foreach ($pStmt as $row) {
+        $firend = new FriendShip($row['Friend_RequesterId'], $row['Friend_RequesteeId'], $row['Status']);
+        array_push($friends, $firend);
+    }
+    if (sizeof($friends) != 0) {
+        return $friends;
+    }
+    else{
+        return NULL;
+    }
+}
+
+// get user's shared album
+function GetUserSharedAlbum($userId){
+    $sharedAlbums = array();
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Album WHERE Owner_Id = :userId && Accessibility_Code = "shared"';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['userId'=>$userId]);
+    foreach ($pStmt as $row){
+        $sharedAlbum = new Album($row['Album_Id'], $row['Title'], $row['Date_Updated'], $row['Owner_Id'], $row['Accessibility_Code']);
+        array_push($sharedAlbums, $sharedAlbum);
+    }
+    if (sizeof($sharedAlbums) != 0){
+        return $sharedAlbums;
+    }
+    else{
+        return NULL;
+    }
+}
+
+// ger friend requests to the user
+function GetFriendRequest($userId){
+    $friendships = array();
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Friendship WHERE Friend_RequesteeId = :userId && Status = "request"';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['userId'=>$userId]);
+    foreach ($pStmt as $row){
+        $friendship = new FriendShip($row['Friend_RequesterId'], $row['Friend_RequesteeId'], $row['Status']);
+        array_push($friendships, $friendship);
+    }
+    if (sizeof($friendships) != 0){
+       return $friendships;
+    }
+    else{
+        return NULL;
+    }
+}
+
+// accept friend request
+function AcceptFriendRequest($requesterId, $requesteeId){
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'UPDATE Friendship SET Status = "accepted" WHERE Friend_RequesterId = :requesterId && Friend_RequesteeId= :requesteeId && Status = "request"';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['requesterId'=>$requesterId, 'requesteeId'=>$requesteeId]);
+}
+
+// deny friend request
+function DenyFriendRequest($requesterId, $requesteeId){
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'DELETE FROM Friendship WHERE Friend_RequesterId = :requesterId && Friend_RequesteeId= :requesteeId && Status = "request"';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['requesterId'=>$requesterId, 'requesteeId'=>$requesteeId]);
+}
+
+// Defriend friendship
+function DefriendFriendship($requesterId, $requesteeId){
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'DELETE FROM Friendship WHERE (Friend_RequesterId = :requesterId && Friend_RequesteeId= :requesteeId) || (Friend_RequesterId = :requesteeId && Friend_RequesteeId = :requesterId) && Status = "accepted"';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['requesterId'=>$requesterId, 'requesteeId'=>$requesteeId]); 
+}

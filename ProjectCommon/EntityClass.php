@@ -155,3 +155,27 @@ class File{
     }
 
 }
+
+Class FriendShip {
+    private $requesterId;
+    private $requesteeId;
+    private $status;
+    
+    public function __construct($requesterId, $requesteeId, $status) {
+        $this->requesterId = $requesterId;
+        $this->requesteeId = $requesteeId;
+        $this->status = $status;
+    }
+    
+    public function getRequesterId(){
+        return $this->requesterId;
+    }
+    
+    public function getRequesteeId(){
+        return $this->requesteeId;
+    }
+    
+    public function getStatus(){
+        return $this->status;
+    }
+}
