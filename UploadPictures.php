@@ -26,19 +26,22 @@ if (isset($btnSubmit) && ($_SESSION['key'] == $hiddenKey)){
     }
     else{
             $success = true;
-    
+                          
             for ($i = 0; $i < count($_FILES['fileUpload']['tmp_name']); $i++) {
 
                 if ($_FILES['fileUpload']['error'][$i] == 0) {
+                   
                     $tempFilePath = $_FILES['fileUpload']['tmp_name'][$i];
                     $filePath = $_FILES['fileUpload']['name'][$i];
                     $uploadFile = new File($tempFilePath, $filePath);
                     AddNewPicture($selectedAlbum, $imgTitle, $description, $uploadFile);
+                    
                 }
                 else {
                     if ($_FILES['fileUpload']['error'][$i] == 1) {
                         $fileName = $_FILES['fileUpload']['name'][$i];
                         $uploadError = "$fileName is too large";
+                        
                     }
                     else if ($_FILES['fileUpload']['error'][$i] == 4) {
                         $uploadError = "No upload file specified";
@@ -47,12 +50,14 @@ if (isset($btnSubmit) && ($_SESSION['key'] == $hiddenKey)){
                         $descriptionValue = $description;
                         $albumValue = $selectedAlbum;
                         $success = false;
+                        //echo "<script>$('body').waitMe('hide')</script>";
                 }
             }
     }
 
     if ($success) {
-         echo "<script>ShowDiaglogBox('A new album has been saved successfully')</script>";
+         //echo '<script>$("body").waitMe("hide")</script>';
+         echo "<script>ShowDiaglogBox('Upload Picture(s) successfully')</script>";
          $albumValue = $descriptionValue = $titleValue = "";
     }
 }
@@ -60,13 +65,11 @@ $myAlbums =  GetMyAlbum($userId);
 $_SESSION['key'] = mt_rand(1, 100000);
 ?>
 
-<div class = "upload-picture">
+<div id="uploadPicture" class = "upload-picture">
     <h1 class = "new-album-title">Upload Pictures</h1>
     <p class="label-padding">accepted picture types: JPG(JEPG), GIF and PNG.</p>
     <p class="label-padding">You can upload multiple pictures at a time by pressing the shift key while selecting pictures.</p>
     <p class="label-padding">When uploading multiple pictures, the title and description fields will be applied to all pictures</p>
-    
-    <br/>
     
     <form action = "UploadPictures.php" role="form" method = "post" enctype="multipart/form-data">
         <input type="hidden" name="hiddenKey" value ="<?php echo $_SESSION['key']?>" />
@@ -90,14 +93,14 @@ $_SESSION['key'] = mt_rand(1, 100000);
             <div class="col-sm-4">
                 <input type="file" class="form-control" name="fileUpload[]" multiple accept="image/*"/>
             </div>
-             <div class="error col-sm-6"><?php echo $uploadError ?></div>
+             <div class="error col-sm-4"><?php echo $uploadError ?></div>
         </div>
         <div class="row horizontal-margin vertical-margin">
             <div class="col-sm-2 label-padding highlight label-length">Title</div>
             <div class="col-sm-4">
                 <input type="text" class = "form-control" name="imgTitle" value="<?php echo $titleValue ?>" />
             </div>
-             <div class="error col-sm-6"><?php echo $titleError ?></div>
+             <div class="error col-sm-4"><?php echo $titleError ?></div>
         </div>
         <div class="row horizontal-margin vertical-margin">
             <div class ="col-sm-2 label-padding highlight label-length">Description:</div>
@@ -106,9 +109,9 @@ $_SESSION['key'] = mt_rand(1, 100000);
             </div>
         </div>  
         <div class="row  v-margin label-padding">
-            <div class="col-sm-1 btn-submit "><button type = "submit" name = "btnSubmit" class = "btn btn-success btn-block" >Submit</button></div>
+            <div class="col-sm-1 btn-submit "><button type = "submit" name = "btnSubmit" class = "btn btn-success btn-block" onclick="run_waitMe()">Submit</button></div>
             <div class="col-sm-1 btn-clear "><button type ="submit" class = "btn btn-warning btn-block" name = "btnclear">Clear</button></div>
         </div>
-    </form>
+      
 </div>
 <?php include 'ProjectCommon/Footer.php' ?>
