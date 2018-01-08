@@ -147,12 +147,47 @@ function UpdateAccessbilityCode($albumId, $code) {
     $pStmt->execute(['code'=>$code, 'albumId'=>$albumId]);
 }
 
+function GetPictureFileNameByAlbum($albumId){
+    $fileNames = array();
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT FileName FROM Picture WHERE Album_Id = :albumId';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['albumId'=> $albumId]);
+    foreach ($pStmt as $row){
+        if ($row){
+            array_push($fileNames, $row['FileName']);
+        }
+    }
+    if (sizeof($fileNames) > 0){
+        return $fileNames;
+    }
+    else {
+        return NULL;
+    }
+}
+
+function DeletePictureByName($fileName){
+   $albumPath = ALBUM_PICTURES_DIR."/".$fileName;
+   $thumbnailPath = ALBUM_THUMBNAILS_DIR."/".$fileName;
+   $originalPath = ORIGINAL_PICTURES_DIR."/".$fileName;
+   if (unlink($originalPath) && unlink($thumbnailPath) && unlink($albumPath)){
+       return true;
+   }
+   else {
+       return false;
+   }
+}
 // delete pictures belong to an album
 function DeleteAlbumPictures($albumId) {
+    $fileNames = GetPictureFileNameByAlbum($albumId);
+    foreach ($fileNames as $fileName){
+        DeletePictureByName($fileName);
+    }
     $myPdo = ConnectSQLServer();
     $deleteAlbumPicturesStatement = 'DELETE FROM Picture WHERE Album_Id = :albumId';
     $pStmt = $myPdo->prepare($deleteAlbumPicturesStatement);
     $pStmt->execute(['albumId'=>$albumId]);
+    
 }
 
 // delete a specified album
