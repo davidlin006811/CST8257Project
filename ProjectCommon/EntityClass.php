@@ -179,3 +179,37 @@ Class FriendShip {
         return $this->status;
     }
 }
+
+class Comment {
+    private $id;
+    private $authorId;
+    private $pictureId;
+    private $text;
+    private $date;
+    
+    public function __construct($id, $authorId, $pictureId, $text, $date) {
+        $this->id = $id;
+        $this->authorId = $authorId;
+        $this->pictureId = $pictureId;
+        $this->text = $text;
+        $this->date = $date;
+    }
+    
+    public function getId(){
+        return $this->id;
+    }
+    
+    public function getAuthorId(){
+        return $this->authorId;
+    }
+    
+    public function getPictureId(){
+        return $this->pictureId;
+    }
+    public function getCommentText(){
+        return $this->text;
+    }
+    public function getDate(){
+        return $this->date;
+    }
+}

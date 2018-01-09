@@ -165,6 +165,27 @@ function GetPictureFileNameByAlbum($albumId){
         return NULL;
     }
 }
+function DeletePictureComments($pictureId){
+    if ($pictureId == NULL) {
+        return NULL;
+    }
+     $myPdo = ConnectSQLServer();
+     $sqlStatement = 'DELETE FROM Comment WHERE Picture_Id = :pictureId';
+     $pStmt = $myPdo->prepare($sqlStatement);
+     $pStmt->execute(['pictureId'=>$pictureId]);
+     
+}
+function DeletePicture($picture){
+    $fileName = $picture->getFileName();
+    $pictureId = $picture->getId();
+    DeletePictureComments($pictureId);
+    if (DeletePictureByName($fileName)){
+        $myPdo = ConnectSQLServer();
+        $sqlStatement = 'DELETE FROM Picture WHERE Picture_Id = :pictureId';
+        $pStmt = $myPdo->prepare($sqlStatement);
+        $pStmt->execute(['pictureId'=>$pictureId]);
+    }
+}
 
 function DeletePictureByName($fileName){
    $albumPath = ALBUM_PICTURES_DIR."/".$fileName;
@@ -179,9 +200,15 @@ function DeletePictureByName($fileName){
 }
 // delete pictures belong to an album
 function DeleteAlbumPictures($albumId) {
-    $fileNames = GetPictureFileNameByAlbum($albumId);
-    foreach ($fileNames as $fileName){
-        DeletePictureByName($fileName);
+   /* $fileNames = GetPictureFileNameByAlbum($albumId);
+    if ($fileNames != NULL){
+        foreach ($fileNames as $fileName){
+            DeletePictureByName($fileName);
+        }
+    }*/
+    $albumPictures = GetPicturesByAlbumId($albumId);
+    for ($i = 0; $i < sizeof($albumPictures); $i++){
+        DeletePicture($albumPictures[$i]);
     }
     $myPdo = ConnectSQLServer();
     $deleteAlbumPicturesStatement = 'DELETE FROM Picture WHERE Album_Id = :albumId';
@@ -254,10 +281,10 @@ function GetPicturesByAlbumId($albumId){
     $pStmt->execute(['albumId'=>$albumId]);
     $pictures = array();
     foreach($pStmt as $row){
-        $picture = new Picture($row['Picture_Id'], $row['Title'], $row['Album_Id'], $row['Date_Add'], $row['Description'], $row['FileName']);
+        $picture = new Picture($row['Picture_Id'], $row['Title'], $row['Album_Id'], $row['Date_Added'], $row['Description'], $row['FileName']);
         array_push($pictures, $picture);
     }
-    if (sizeof($pictures) != 0){
+    if (sizeof($pictures) > 0){
         return $pictures;
     }
     else {
@@ -418,7 +445,7 @@ function AddNewPicture($albumId, $title, $description, $file){
     $pStmt->execute(['id'=>$albumId, 'fileName'=>$fileName, 'title'=>$title, 'description'=>$description, 'date'=>$dateUpdate]);
 }
 
-// check if 2 users are already friends
+// get friendship
 function GetFriendShip($userId1, $userId2) {
     $myPdo = ConnectSQLServer();
     $sqlStatement = 'SELECT * FROM Friendship WHERE (Friend_RequesterId = :userId1 && Friend_RequesteeId = :userId2) OR (Friend_RequesterId = :userId3 && Friend_RequesteeId = :userId4)';
@@ -432,6 +459,21 @@ function GetFriendShip($userId1, $userId2) {
     }
     else {
         return NULL;
+    }
+}
+
+//check if is friend
+function CheckFriendShip($userId1, $userId2) {
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Friendship WHERE (Friend_RequesterId = :userId1 && Friend_RequesteeId = :userId2) OR (Friend_RequesterId = :userId2 && Friend_RequesteeId = :userId1) && Status = "accepted"';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['userId1'=>$userId1, 'userId2'=>$userId2]);
+    $row = $pStmt->fetch(PDO::FETCH_ASSOC);
+    if ($row){
+        return TRUE;
+    }
+    else {
+        return FALSE;
     }
 }
 // add friendship between 2 users
@@ -556,3 +598,38 @@ function DefriendFriendship($requesterId, $requesteeId){
     $pStmt = $myPdo->prepare($sqlStatement);
     $pStmt->execute(['requesterId'=>$requesterId, 'requesteeId'=>$requesteeId]); 
 }
+
+// save comment
+function SaveComment($authorId, $pictureId, $commentText) {
+    $commentText = htmlentities($commentText);
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'INSERT INTO Comment(Author_Id, Picture_Id, Comment_Text) Values (:authorId, :pictureId, :commentText)';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['authorId'=>$authorId, 'pictureId'=>$pictureId, 'commentText'=>$commentText]);
+}
+
+function GetPictureComment($pictureId){
+    $comments = array();
+    $myPdo = ConnectSQLServer();
+    $sqlStatement = 'SELECT * FROM Comment WHERE Picture_Id = :pictureId ORDER BY "Date timestamp" DESC';
+    $pStmt = $myPdo->prepare($sqlStatement);
+    $pStmt->execute(['pictureId'=>$pictureId]);
+    foreach ($pStmt as $row) {
+        
+        if ($row){
+            $timestamp = strtotime($row['Date timestamp']);
+            $date = date('Y-m-d', $timestamp);
+            $comment = new Comment($row['Comment_Id'], $row['Author_Id'], $row['Picture_Id'], $row['Comment_Text'], $date);
+            array_push($comments, $comment);
+        }
+       
+    }
+    if (sizeof($comments) > 0){
+        
+        return $comments;
+    }
+    else {
+        return NULL;
+    }
+}
+
