@@ -1,6 +1,7 @@
     $(document).ready(function(){
-      //  var imgWidth = $('.img-container img').width();
-      //  $('.img-container').width(imgWidth);
+        var imgWidth = $('.img-container img').width();
+       $('.img-container').width(imgWidth);
+    
       $('.deleteAlbum').on('click', function(e){
         e.preventDefault();
         var deleteLink = $(this).attr('href');
@@ -70,3 +71,16 @@ bg: 'rgba(255,255,255,0.7)',
 color: '#111'
 });
 }
+
+function changeAlbum(){
+    var albumId = $('#selectAlbum').val();
+    var link = "MyPictures.php?albumId=" + albumId;
+    window.location.replace(link);
+}
+
+function changeShareAlbum(){
+    var albumId = $('#selectAlbum').val();
+    var link = "FriendPictures.php?albumId=" + albumId;
+    window.location.replace(link);
+}
+
