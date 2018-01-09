@@ -65,6 +65,7 @@ if (isset($btnSignup) && ($hiddenKey == $_SESSION['key'])){
     } 
     
     if ($validateSuccess) {
+        
         $saveRecordSuccess = SaveUserRecord($userId, $userName, $phoneNumber, $password);
         if (!$saveRecordSuccess){
             $idError = "A user with this ID has already signed up";

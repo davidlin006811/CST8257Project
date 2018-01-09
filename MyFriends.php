@@ -9,7 +9,9 @@ if (!isset($_SESSION['loginUser'])){
     header("location: Login.php");
     exit();
 }
-
+$_SESSION['selectedSharedAlbumId'] = NULL;
+$_SESSION['selectedSharedPictureId'] = NULL;
+$_SESSION['friendId'] = NULL;
 $loginUser = unserialize($_SESSION['loginUser']);
 $userName = $loginUser->getName();
 $userId = $loginUser->getId();

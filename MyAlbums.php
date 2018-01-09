@@ -3,13 +3,13 @@ session_start();
 include 'ProjectCommon/Header.php';
 include_once 'ProjectCommon/Functions.php';
 
-$_SESSION['attemptAccessPage'] = 'MyAlbums.php';
+
 if (!isset($_SESSION['loginUser'])){
-    
+    $_SESSION['attemptAccessPage'] = 'MyAlbums.php';
     header("location: Login.php");
     exit();
 }
-
+$_SESSION['selectedAlbumId'] = NULL;
 $loginUser = unserialize($_SESSION['loginUser']);
 $userName = $loginUser->getName();
 $userId = $loginUser->getId();
@@ -17,8 +17,9 @@ $myAlbums =  GetMyAlbum($userId);
 if (urldecode($_GET["deleteId"]) != NULL) {
     $albumId = (int) urldecode($_GET["deleteId"]);
     DeleteAlbum($albumId, $userId);
+    $_SESSION['selectedPictureId'] = NULL;
     header("location:MyAlbums.php");
-    exit();
+    
 }
 extract($_POST);
 if (isset($btnSaveChange)){
@@ -29,7 +30,7 @@ if (isset($btnSaveChange)){
         
         if ($_POST[$name] != $code){
             UpdateAccessbilityCode($albumId, $_POST[$name]);
-            
+             $_SESSION['selectedPictureId'] = NULL;
             header("location:MyAlbums.php");
             exit();
         }

@@ -31,7 +31,8 @@ if (isset($btnLogin)) {
         $loginUser = UserLogin($userId, $password);
         
         if ($loginUser != NULL){
-           
+            $_SESSION['selectedPictureId'] = NULL;
+            $_SESSION['selectedAlbumId'] = Null;
             $_SESSION["loginUser"] = serialize($loginUser);
              if (isset($_SESSION['attemptAccessPage'])) {
                 $accesslink = "location:".$_SESSION['attemptAccessPage'];
